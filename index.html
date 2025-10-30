@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Happy Birthday My Love 💖</title>
+<style>
+  :root {
+    --book-width-desktop: 800px;
+    --book-height-desktop: 500px;
+    --book-width: 92vw;
+    --book-height: 70vh;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background: linear-gradient(135deg,#ffb6c1,#ffe4e1);
+    font-family: "Poppins",sans-serif;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#ff4b6e;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    overflow:hidden;
+    touch-action:manipulation;
+  }
+
+  .book{
+    width:var(--book-width);
+    height:var(--book-height);
+    max-width:var(--book-width-desktop);
+    max-height:var(--book-height-desktop);
+    position:relative;
+    perspective:2000px;
+  }
+
+  .paper{
+    position:absolute;
+    width:100%;
+    height:100%;
+    border-radius:14px;
+    transform-style:preserve-3d;
+    transition: transform 900ms cubic-bezier(.2,.8,.2,1), box-shadow 400ms;
+    will-change:transform;
+    overflow:hidden;
+  }
+
+  /* front/back panels */
+  .panel{
+    position:absolute;
+    inset:0;
+    padding:5%;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    border-radius:inherit;
+    backface-visibility:hidden;
+    -webkit-backface-visibility:hidden;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    text-align:center;
+  }
+
+  .panel img{
+    width:72%;
+    max-width:320px;
+    border-radius:14px;
+    margin-bottom:12px;
+    box-shadow:0 6px 16px rgba(0,0,0,0.08);
+  }
+
+  .panel h1{ margin:0 0 6px; font-size:1.6rem; line-height:1.1; }
+  .panel p{ margin:0; font-size:1rem; line-height:1.4; color:#7a2d4a; }
+
+  /* make each page visually distinct */
+  #p1 .front.page-style{ background:linear-gradient(120deg,#ffe4e1,#ffb6c1); }
+  #p1 .back.page-style { background: linear-gradient(120deg,#fff7f8,#ffdfe6); }
+
+  #p2 .front.page-style{ background:linear-gradient(120deg,#fdfbfb,#ebedee); }
+  #p2 .back.page-style{ background:linear-gradient(120deg,#f6d365,#fda085); }
+
+  #p3 .front.page-style{ background:linear-gradient(120deg,#a1c4fd,#c2e9fb); }
+  #p3 .back.page-style{ background:linear-gradient(120deg,#fddb92,#d1fdff); }
+
+  #p4 .front.page-style{ background:linear-gradient(120deg,#ffecd2,#fcb69f); }
+  #p4 .back.page-style{ background:linear-gradient(120deg,#fff6e6,#ffeeda); }
+
+  #p5 .front.page-style{ background:linear-gradient(120deg,#fad0c4,#ffd1ff); }
+  #p5 .back.page-style{ background:linear-gradient(120deg,#fff0fb,#ffe8f7); }
+
+  /* back face rotated */
+  .back { transform: rotateY(180deg); }
+
+  /* flipped state for page turn */
+  .paper.flipped { transform: rotateY(-180deg); box-shadow: 0 4px 10px rgba(0,0,0,0.04); }
+
+  /* controls */
+  .controls {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    display:flex;
+    gap:10px;
+    z-index:9999;
+  }
+  .controls button {
+    background:#ff7eb3;
+    border:none;
+    color:white;
+    padding:10px 14px;
+    border-radius:999px;
+    font-weight:600;
+    cursor:pointer;
+    box-shadow:0 6px 18px rgba(255,0,120,0.08);
+  }
+  .controls button[disabled]{ opacity:.5; cursor:not-allowed; transform:none; }
+
+  /* hearts */
+  .heart { position:fixed; bottom:-12px; font-size:18px; pointer-events:none; opacity:.9; }
+
+  /* gift styling (last page) */
+  .gift-box{
+    width:120px; height:120px; border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    position:relative; cursor:pointer; box-shadow:0 10px 30px rgba(0,0,0,0.08);
+    background:#ff4b6e;
+  }
+  .gift-box .lid{
+    position:absolute; top:0; left:0; width:120px; height:34px;
+    background:#ff7eb3; border-radius:10px 10px 0 0; transform-origin:left;
+    transition: transform 600ms ease;
+  }
+  .gift-box.open .lid{ transform: rotate(-60deg); }
+  .ribbon { position:absolute; width:14px; height:100%; background:#fff; left:calc(50% - 7px); }
+  .ribbon::before{ content:""; position:absolute; left:-45px; top:50%; width:90px; height:14px; background:#fff; transform:translateY(-50%); border-radius:10px; }
+
+  .final-message{ display:none; text-align:center; color:#7a2d4a; }
+  .final-message.show{ display:block; animation: fadeIn 900ms ease both; }
+
+  /* confetti pieces */
+  .confetti { position:fixed; width:10px; height:10px; top:-10px; border-radius:2px; }
+
+  @keyframes floatUp { 0%{ transform: translateY(0) } 100%{ transform: translateY(-110vh) } }
+  @keyframes fall { 0%{ transform: translateY(0) rotate(0deg); opacity:1 } 100%{ transform: translateY(100vh) rotate(720deg); opacity:0 } }
+  @keyframes fadeIn { from{opacity:0; transform:scale(.95)} to{opacity:1; transform:scale(1)} }
+
+  /* responsive tweaks */
+  @media (min-width:900px){
+    :root { --book-width: var(--book-width-desktop); --book-height: var(--book-height-desktop); }
+  }
+  @media (max-width:520px){
+    .panel img{ width:86%; }
+    .panel h1{ font-size:1.2rem }
+    .panel p{ font-size:.95rem }
+    .controls { right:8px; bottom:8px; gap:8px; }
+    .controls button{ padding:8px 12px; font-size:14px; }
+    .gift-box{ width:96px; height:96px }
+    .gift-box .lid{ width:96px; height:28px }
+  }
+</style>
+</head>
+<body>
+
+<div class="book" id="book">
+
+  <!-- Page 5 (last - surprise) -->
+  <div class="paper" id="p5" data-index="5" style="z-index:1; transform-origin:left;">
+    <div class="panel front page-style">
+      <h1>🎁 The Big Surprise 🎁</h1>
+      <p>Tap the gift box when you reach here!</p>
+      <div class="gift-box" id="giftBox">
+        <div class="lid"></div>
+        <div class="ribbon"></div>
+      </div>
+      <div class="final-message" id="finalMessage">
+        <h2>🎉 Happy Birthday Mi Amor 💕</h2>
+        <p>Once again wishing a very very happy and pyaar bhara birthday to my lovely girl ❤💐 that means a lot to me 🫶🏼 ,a most vakuable than anything, that supported me at my hard times , that knows me better than me .... Have a very very greatlife ahead 😊🌹💖</p>
+      </div>
+    </div>
+    <div class="panel back page-style">
+      <h1>🌈 Our Forever Story 🌈</h1>
+      <p>Chapter complete — but our story continues every day.</p>
+    </div>
+  </div>
+
+  <!-- Page 4 -->
+  <div class="paper" id="p4" data-index="4" style="z-index:2; transform-origin:left;">
+    <div class="panel front page-style">
+      <img src="p5.jpg" alt="Memory 4" height="300px" />
+      <h1>A beauty wrapped in grace🤌🏼❤️</h1>
+      <p>Wishing u a beautiful 17th birthday. May bajrangbli bless u with every blessings and let u achieve everything u wanted in life and let u climb every stairs of life easily. Be happy and with me always , always loving you.🫶🏼♾️</p>
+      <button class="next-btn">Next ➜</button>
+    </div>
+    <div class="panel back page-style">
+      <img src="photo4b.jpg" alt="Memory 4b" />
+      <h1>Magical Days</h1>
+      <p>With you, ordinary days turn into little miracles ✨</p>
+    </div>
+  </div>
+
+  <!-- Page 3 -->
+  <div class="paper" id="p3" data-index="3" style="z-index:3; transform-origin:left;">
+    <div class="panel front page-style">
+      <img src="p4.jpg" alt="Memory 3" height="300px" />
+      <h1>Smokin' Hottie🥵🔥</h1>
+      <h3>Reason for garmi ka mausam😚</h3>
+      <p>Thank youu , and always be thank ful for choosing me as a average guy although being soo cute and hot , its really worth to live in this world with u my bebbo🥹</p>
+      <button class="next-btn">Next ➜</button>
+    </div>
+    <div class="panel back page-style">
+      <img src="photo3b.jpg" alt="Memory 3b" />
+      <h1>Warm Hugs</h1>
+      <p>Every hug from you feels like coming home 💞</p>
+    </div>
+  </div>
+
+  <!-- Page 2 -->
+  <div class="paper" id="p2" data-index="2" style="z-index:4; transform-origin:left;">
+    <div class="panel front page-style">
+      <img src="p3.jpg" alt="Memory 2" height="300px"/>
+      <h1>A lovely wish to my Baby Bunny🐰</h1>
+      <p>Thank you for making my life enjoyable and worthit ny hopping like a bunny in garden of my heart🌸</p>
+      <button class="next-btn">Next ➜</button>
+    </div>
+    <div class="panel back page-style">
+      <img src="photo2b.jpg" alt="Memory 2b" />
+      <h1>Bright Days</h1>
+      <p></p>
+    </div>
+  </div>
+
+  <!-- Page 1 (cover) -->
+  <div class="paper" id="p1" data-index="1" style="z-index:5; transform-origin:left;">
+    <div class="panel front page-style">
+      <h1>🎂 Happiest Birthday Akku 💕</h1>
+      <img src="p6.jpg" alt="Cover Photo" height="300px" />
+      <p>Wishing a majestic and most cheerful birthday to my girl❤️
+        <br>To my dearest one, to my SOULmate👻
+      </p>
+      <button class="next-btn">Next ➜</button>
+    </div>
+    <div class="panel back page-style">
+      <h1>Let’s Begin</h1>
+      <p>Turn the page and join me in our little tale 💌</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- audio -->
+<!-- background music (auto starts and fades in) -->
+<audio id="bgMusic" autoplay loop style="display:none;">
+  <source src="Kashish-[AudioTrimmer.com].mp3" type="audio/mpeg">
+</audio>
+
+<script>
+window.addEventListener('load', () => {
+  const music = document.getElementById('bgMusic');
+  music.volume = 0; // start silent for fade-in effect
+
+  // Try to autoplay immediately
+  const playAttempt = music.play();
+
+  const fadeIn = () => {
+    let vol = 0;
+    const fadeInterval = setInterval(() => {
+      if (vol < 1) {
+        vol += 0.02;        // speed of fade (increase 0.02 per step)
+        music.volume = vol; // apply new volume
+      } else {
+        clearInterval(fadeInterval);
+      }
+    }, 120); // every 120ms = smooth gradual fade
+  };
+
+  if (playAttempt !== undefined) {
+    playAttempt
+      .then(() => {
+        fadeIn(); // if autoplay works, fade in immediately
+      })
+      .catch(() => {
+        console.log("Autoplay blocked — waiting for user interaction");
+        // if autoplay blocked, wait for first click/tap to start
+        document.body.addEventListener('click', () => {
+          music.play();
+          fadeIn(); // fade in after user interaction
+        }, { once: true });
+      });
+  }
+});
+</script>
+
+
+<!-- prev/next (extra controls) -->
+<div class="controls" aria-hidden="false">
+  <button id="prevBtn" disabled>◀ Prev</button>
+  <button id="nextBtn">Next ▶</button>
+</div>
+
+<script>
+(function(){
+  const papers = Array.from(document.querySelectorAll('.paper')); // top-to-bottom order in DOM (p5..p1)
+  const num = papers.length;
+  // Sort such that index 0 is cover (p1). We'll create an ordered array by data-index ascending.
+  papers.sort((a,b)=> Number(a.dataset.index) - Number(b.dataset.index));
+  // ensure initial z-index: highest for page1 (cover)
+  papers.forEach((p,i)=>{
+    p.style.zIndex = (num - i); // p1 -> highest z
+  });
+
+  let current = 1; // current page number (1-based) - how many pages flipped+1. Cover is page 1; user flips to show page1 back etc.
+  // We'll treat "current" as how many pages have been flipped + 1. Start unflipped (0 flipped).
+  let flippedCount = 0;
+
+  // Helper: flip next
+  function nextPage(){
+    if(flippedCount >= num) return;
+    // find the topmost unflipped page (starting from cover: papers[0])
+    // We want to flip the page at index = flippedCount (0-based).
+    const pageToFlip = papers[flippedCount];
+    pageToFlip.classList.add('flipped');
+    // after flipping, move its z-index to bottom so others are still above it visually
+    pageToFlip.style.zIndex = 0;
+    // increment flipped count
+    flippedCount++;
+    updateControls();
+    // if we reached last page (all flipped) do nothing extra here
+  }
+
+  function prevPage(){
+    if(flippedCount <= 0) return;
+    // we need to unflip the last flipped page (index = flippedCount - 1)
+    const pageToUnflip = papers[flippedCount - 1];
+    pageToUnflip.classList.remove('flipped');
+    // restore its stacking above other unflipped pages
+    // find highest z among current unflipped pages and set it appropriately
+    // We'll set z to (num - (flippedCount - 1))
+    pageToUnflip.style.zIndex = (num - (flippedCount - 1));
+    flippedCount--;
+    updateControls();
+  }
+
+  // attach next buttons inside panels
+  document.querySelectorAll('.next-btn').forEach(btn => {
+    btn.addEventListener('click', () => nextPage());
+  });
+
+  // Prev/Next control buttons
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  prevBtn.addEventListener('click', () => prevPage());
+  nextBtn.addEventListener('click', () => nextPage());
+
+  function updateControls(){
+    prevBtn.disabled = flippedCount <= 0;
+    nextBtn.disabled = flippedCount >= num;
+  }
+  updateControls();
+
+  // Touch swipe (left to go next)
+  let touchStartX = null;
+  document.addEventListener('touchstart', (e)=> {
+    touchStartX = e.changedTouches[0].clientX;
+  }, {passive:true});
+  document.addEventListener('touchend', (e)=> {
+    if(touchStartX === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if(dx < -40) nextPage();
+    if(dx > 40) prevPage();
+    touchStartX = null;
+  });
+
+  // Floating hearts
+  function spawnHeart(){
+    const el = document.createElement('div');
+    el.className = 'heart';
+    el.textContent = '💖';
+    el.style.left = Math.random()*100 + 'vw';
+    el.style.animation = `floatUp ${4 + Math.random()*4}s linear`;
+    el.style.opacity = String(0.6 + Math.random()*0.4);
+    document.body.appendChild(el);
+    setTimeout(()=> el.remove(), 7000);
+  }
+  setInterval(spawnHeart, 450);
+
+  // Gift box behavior: only on last page's front
+  const giftBox = document.getElementById('giftBox');
+  const finalMessage = document.getElementById('finalMessage');
+  giftBox.addEventListener('click', ()=>{
+    // only allow when you have flipped to last page (i.e., flippedCount === num - 1)
+    // We consider "reached last page" when flippedCount === num - 1 (because pages are flipped in order)
+    if(flippedCount < num - 1){
+      // optional: hint to flip more pages
+      giftBox.animate([{ transform:'scale(1)' }, { transform:'scale(1.06)' }, { transform:'scale(1)' }], { duration:500 });
+      return;
+    }
+    if(!giftBox.classList.contains('open')){
+      giftBox.classList.add('open');
+      // show message with small delay
+      setTimeout(()=> finalMessage.classList.add('show'), 700);
+      // launch confetti
+      launchConfetti();
+    }
+  });
+
+  function launchConfetti(){
+    const count = 90;
+    for(let i=0;i<count;i++){
+      const c = document.createElement('div');
+      c.className = 'confetti';
+      c.style.left = Math.random()*100 + 'vw';
+      c.style.background = `hsl(${Math.random()*360},85%,65%)`;
+      c.style.width = (6 + Math.random()*8) + 'px';
+      c.style.height = (6 + Math.random()*8) + 'px';
+      c.style.animation = `fall ${2.5 + Math.random()*2}s linear`;
+      document.body.appendChild(c);
+      setTimeout(()=> c.remove(), 4500);
+    }
+  }
+
+  // OPTIONAL: keyboard navigation for desktop: left/right arrows
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'ArrowRight') nextPage();
+    if(e.key === 'ArrowLeft') prevPage();
+  });
+
+  // ensure on load the cover/front is visible; initial z assigned above handles it.
+  // small accessibility: focus first next button if present
+  const firstNext = document.querySelector('.next-btn');
+  if(firstNext) firstNext.setAttribute('aria-label','Flip to next page');
+
+})();
+</script>
+</body>
+</html>
